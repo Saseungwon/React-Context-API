@@ -1,70 +1,122 @@
-# Getting Started with Create React App
+## Context API
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Context를 이용하면 트리단계마다 명시적으로 props를 넘겨주지 않아도 많은 컴포넌트가 이러한 값을 공유하도록 할 수 있다.
 
-## Available Scripts
+#### 하위 컴포넌트 전체에 데이터를 공유하는 법
 
-In the project directory, you can run:
+- 데이터를 Set 하는 것
+  - 가장 상위 컴포넌트 => 프로바이더
+- 데이터를 Get 하는 것
+  - 모든 하위 컴포넌트에서 접근 가능
+    - 컨슈머로 하는 방법
+    - 클래스 컴포넌트의 this.context로 하는 방법
+    - 펑셔널 컴포넌트의 useContext로 하는 방법
 
-### `npm start`
+#### 데이터를 Set 하기 - .Provider
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. 일단 컨텍스트를 생성한다. (Context API 사용)
+2. Context.Provider 라고 하는 컴포넌트 사용
+3. value 라는 props를 사용해서 provider에게 데이터를 넣어주면 됨
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+PersonContext.Provider
 
-### `npm test`
+```jsx
+import React from "react";
+import App from "./App";
+import PersonContext from "./contexts/personContext";
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+const persons = [
+  { id: 0, name: "Mark", age: 36 },
+  { id: 1, name: "Seungwon", age: 27 },
+];
 
-### `npm run build`
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <PersonContext.Provider value={persons}>
+      <App />
+    </PersonContext.Provider>
+  </React.StrictMode>
+);
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+reportWebVitals();
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+#### 데이터를 Get 하기(1) - .Consumer
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Context를 가져온다.
+2. Context.Consumer를 사용한다.
+3. value 사용
 
-### `npm run eject`
+PersonContext.Consumer
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```jsx
+import PersonContext from "../contexts/personContext";
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+// function class 둘다 사용가능
+export default function ConsumerEx() {
+  return (
+    <PersonContext.Consumer>
+      {(persons) => (
+        <ul>
+          {persons.map((person) => (
+            <li>{person.name}</li>
+          ))}
+        </ul>
+      )}
+    </PersonContext.Consumer>
+  );
+}
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### 데이터를 Get하기(2) - class
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. static contextType에 컨텍스트를 설정한다.
+2. this.context 로 접근하면 그게 value가 나온다.
 
-## Learn More
+```jsx
+import React from "react";
+import PersonContext from "../contexts/personContext";
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+export default class StaticEx extends React.Component {
+  // static contextType은 여러 개를 지정할 수 없기 때문에 만약 다른 컨텍스트에서 데이터를 동시에 가져다가 쓰고 싶다면
+  //컴포넌트를 하나 더 만들어야 해서 복잡해짐. 현재는 별로 선호되는 방식은 아니다.
+  static contextType = PersonContext;
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  render() {
+    const persons = this.context;
+    return (
+      <ul>
+        {persons.map((person) => (
+          <li>{person.name}</li>
+        ))}
+      </ul>
+    );
+  }
+}
+```
 
-### Code Splitting
+#### 데이터를 Get하기(3) - functional
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+가장 많이 사용된다.
 
-### Analyzing the Bundle Size
+1. useContext 로 컨텍스트를 인자로 호출한다.
+2. useContext 의 리턴이 value 이다.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```jsx
+import { useContext } from "react";
+import PersonContext from "../contexts/personContext";
 
-### Making a Progressive Web App
+// function class 둘다 사용가능
+export default function FunctionalEx() {
+  const persons = useContext(PersonContext);
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+  return (
+    <ul>
+      {persons.map((person) => (
+        <li>{person.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
