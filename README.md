@@ -98,7 +98,7 @@ export default class StaticEx extends React.Component {
 
 #### 데이터를 Get하기(3) - functional
 
-가장 많이 사용된다.
+가장 많이 사용됨
 
 1. useContext 로 컨텍스트를 인자로 호출한다.
 2. useContext 의 리턴이 value 이다.
